@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>集団体操マニュアル｜おおやけの里</title>
+<style>
+:root{
+  --bg:#f3f6f4;
+  --card:#ffffff;
+  --text:#1e2a24;
+  --sub:#5e6e66;
+  --line:#dde5e0;
+  --accent:#1f8a70;
+  --accent-dark:#176b56;
+  --accent-light:#e2f2ec;
+  --chip:#eaf0ed;
+  --warn:#9a5200;
+  --warn-bg:#fff5e6;
+  --warn-line:#f0c98a;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+  font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%}
+body.has-menu{padding-bottom:96px}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer}
+h1,h2,h3{margin:0;font-weight:700}
+
+/* 上部の帯 */
+.top{position:sticky;top:0;z-index:10;background:var(--accent);color:#fff;
+  padding-top:env(safe-area-inset-top)}
+.top-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:8px;min-height:56px;padding:0 16px}
+.top h1{font-size:1.15rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.back{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:10px;padding:8px 12px;min-height:40px;font-size:1rem}
+.back:active{background:rgba(255,255,255,.32)}
+
+.view{max-width:1100px;margin:0 auto;padding:12px 16px 40px}
+
+/* 検索と絞り込み */
+.search-area input{width:100%;min-height:48px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;
+  background:var(--card);font-size:1.05rem;outline:none;-webkit-appearance:none}
+.search-area input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+.filters{margin:12px 0 4px}
+.filter-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
+.filter-label{flex:0 0 40px;padding-top:9px;font-size:.9rem;color:var(--sub);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--chip);color:var(--text);border-radius:999px;
+  padding:7px 14px;min-height:40px;font-size:.95rem}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.hint{font-size:.85rem;color:var(--sub);margin:4px 0 0}
+
+/* 見出し */
+.sec-title{font-size:1rem;color:var(--sub);margin:16px 0 8px;padding-left:10px;border-left:4px solid var(--accent)}
+
+/* 最近見た */
+.recent-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.recent-chip{flex:0 0 auto;background:var(--accent-light);color:var(--accent-dark);border-radius:999px;
+  padding:8px 14px;min-height:40px;display:flex;align-items:center;font-weight:700;white-space:nowrap}
+
+/* 一覧カード */
+.cards{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:640px){.cards{grid-template-columns:1fr 1fr}}
+@media (min-width:1000px){.cards{grid-template-columns:1fr 1fr 1fr}}
+.card{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:12px 10px 12px 16px;min-height:88px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.card-main{flex:1;min-width:0;display:block}
+.card-main:active{opacity:.7}
+.name{font-size:1.15rem;font-weight:700;line-height:1.35}
+.yomi{font-size:.85rem;color:var(--sub);margin-top:2px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:.8rem;background:var(--chip);border-radius:6px;padding:3px 8px;color:var(--text)}
+.tag-pose{background:#e8edf7;color:#2b4a8a}
+.tag-time{background:#f3efe4;color:#6b5a1e}
+.avail{font-size:.72rem;border-radius:6px;padding:2px 7px;background:#eee;color:#999}
+.avail.on{background:var(--accent-light);color:var(--accent-dark);font-weight:700}
+.add{flex:0 0 auto;width:52px;height:52px;border-radius:50%;border:2px solid var(--accent);background:#fff;
+  color:var(--accent);font-size:1.5rem;line-height:1;display:flex;align-items:center;justify-content:center}
+.add.on{background:var(--accent);color:#fff}
+.badge-sample{display:inline-block;font-size:.72rem;font-weight:700;color:var(--warn);background:var(--warn-bg);
+  border:1px solid var(--warn-line);border-radius:6px;padding:1px 6px;margin-left:8px;vertical-align:middle}
+.empty{color:var(--sub);text-align:center;padding:30px 0}
+
+/* 今日の体操（下の帯） */
+.menubar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:#fff;border-top:1px solid var(--line);
+  box-shadow:0 -2px 10px rgba(0,0,0,.08);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+.menubar-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.menubar-text{flex:1;min-width:0}
+.menubar-text .big{font-weight:700;font-size:1.05rem}
+.menubar-text .small{font-size:.85rem;color:var(--sub)}
+.menubar-text .over{color:var(--warn);font-weight:700}
+.menubar .btn{width:auto;margin:0;padding:12px 16px;white-space:nowrap}
+
+/* 詳細画面 */
+.detail-head h2{font-size:1.45rem;line-height:1.3}
+.detail-grid{display:grid;grid-template-columns:1fr;gap:4px}
+@media (min-width:900px){
+  .detail-grid{grid-template-columns:1fr 1fr;column-gap:24px;
+    grid-template-areas:"video manual" "points manual";align-items:start}
+  .block-video{grid-area:video}.block-points{grid-area:points}.block-manual{grid-area:manual}
+}
+.vsel{margin-bottom:8px}
+.video{position:relative;width:100%;padding-top:56.25%;background:#000;border-radius:12px;overflow:hidden}
+.video iframe,.video video{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+.points{margin:0;padding-left:1.3em}
+.points li{margin:4px 0;font-size:1.05rem}
+.page{margin:0 0 14px}
+.page img{display:block;width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:8px}
+.page figcaption{text-align:center;font-size:.85rem;color:var(--sub);margin-top:4px}
+.pdfbox{width:100%;height:70vh;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+.pdfbox iframe{width:100%;height:100%;border:0}
+.btn{display:block;width:100%;text-align:center;background:var(--accent);color:#fff;border:0;border-radius:12px;
+  padding:14px;min-height:48px;font-size:1.05rem;font-weight:700;margin-top:12px}
+.btn:active{background:var(--accent-dark)}
+.btn-ghost{background:var(--card);color:var(--accent-dark);border:1px solid var(--accent)}
+.btn-warn{background:var(--card);color:var(--warn);border:1px solid var(--warn-line)}
+.placeholder{border:2px dashed var(--warn-line);background:var(--warn-bg);color:var(--warn);border-radius:12px;
+  padding:18px 14px;text-align:center;font-weight:700}
+.updated{color:var(--sub);font-size:.85rem;margin:18px 0 4px}
+.note{font-size:.85rem;color:var(--sub);margin:6px 0 0}
+.foot{text-align:center;color:var(--sub);font-size:.8rem;padding:10px 16px 30px}
+
+/* 体操中の画面 */
+.session-grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media (min-width:900px){
+  .session-grid{grid-template-columns:1fr 1fr;column-gap:24px;align-items:start;
+    grid-template-areas:"clock video" "now video" "ctrl video" "end video" "queue video"}
+  .s-clock{grid-area:clock}.s-now{grid-area:now}.s-video{grid-area:video}
+  .s-ctrl{grid-area:ctrl}.s-end{grid-area:end}.s-queue{grid-area:queue}
+}
+.s-ctrl{margin-top:0}
+.clock-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;text-align:center}
+.clock-label{color:var(--sub);font-size:.95rem}
+.clock{font-size:3.6rem;font-weight:700;line-height:1.1;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.clock.end{color:var(--warn)}
+.bar{height:10px;background:var(--chip);border-radius:5px;overflow:hidden;margin:10px 0 2px}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .4s linear}
+.now-box{background:var(--card);border:2px solid var(--accent);border-radius:14px;padding:14px 16px}
+.now-box.flash{animation:flash .5s 4}
+@keyframes flash{0%,100%{background:var(--card)}50%{background:#fff3c4}}
+.now-label{color:var(--sub);font-size:.9rem}
+.now-name{font-size:1.5rem;font-weight:700;line-height:1.3}
+.now-time{font-size:2.2rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent-dark);line-height:1.2}
+.ctrl{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.ctrl .btn{margin:0}
+.queue{list-style:none;margin:8px 0 0;padding:0;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.queue li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.queue li:last-child{border-bottom:0}
+.queue li.done{color:#9aa39e;text-decoration:line-through}
+.queue li.now{background:var(--accent-light);font-weight:700}
+.queue .min{font-size:.9rem;color:var(--sub);white-space:nowrap}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <button class="back" id="backBtn" type="button" hidden>‹ 一覧へ</button>
+    <h1>集団体操マニュアル</h1>
+  </div>
+</header>
+
+<main id="listView" class="view">
+  <section class="search-area">
+    <input id="q" type="search" placeholder="体操の名前で探す（例：くび）" autocomplete="off" enterkeyhint="search">
+  </section>
+  <section class="filters">
+    <div class="filter-row"><span class="filter-label">部位</span><div class="chips" id="buiChips"></div></div>
+    <div class="filter-row"><span class="filter-label">姿勢</span><div class="chips" id="shiseiChips"></div></div>
+    <p class="hint" id="menuHint"></p>
+  </section>
+  <section id="recentArea" hidden>
+    <h2 class="sec-title">最近見た体操</h2>
+    <div class="recent-row" id="recentRow"></div>
+  </section>
+  <section>
+    <h2 class="sec-title" id="countLabel">体操の一覧</h2>
+    <div class="cards" id="cards"></div>
+    <p class="empty" id="emptyMsg" hidden>条件に合う体操がありません。</p>
+  </section>
+</main>
+
+<main id="detailView" class="view" hidden></main>
+<main id="sessionView" class="view" hidden></main>
+
+<div class="menubar" id="menubar" hidden>
+  <div class="menubar-inner">
+    <div class="menubar-text" id="menubarText"></div>
+    <button type="button" class="btn btn-ghost" id="menuClear">消す</button>
+    <button type="button" class="btn" id="menuStart">はじめる</button>
+  </div>
+</div>
+
+<footer class="foot">介護老人保健施設 おおやけの里　支援相談係</footer>
+<noscript><p class="empty">この画面を使うにはJavaScriptを有効にしてください。</p></noscript>
+
+<script>
+/* ==========================================================
+   ① 体操の登録はここだけを書き換えます（1つの体操 ＝ { } が1つ）
+   ----------------------------------------------------------
+   id     : 英数字の短い名前。URLの目印に使うので重複させない
+   name   : 体操の名前（画面に大きく出る）
+   yomi   : ひらがなの読み（並び順と検索に使う）
+   bui    : 体の部位。複数あれば ["首","肩"] のように書く
+            使える語: 首 / 肩 / 腕・手 / お腹・呼吸 / 足・腰 / 全身 / 口・顔
+            （増やすときは ② の並び順にも足す）
+   shisei : "座位" / "立位" / "両方" のどれか
+   jikan  : 所要時間（分）。「今日の体操」の合計時間と、体操中の
+            残り時間の計算に使う
+   video  : 動画の置き場所。次の3通りのどれか
+            YouTube限定公開 → {type:"youtube", id:"動画ID"}
+              「共有」で出るURL https://youtu.be/AbCdEfGhIjK の
+              最後の11文字が動画ID
+            Googleドライブ → {type:"drive", id:"ファイルID"}
+              URL https://drive.google.com/file/d/ここがID/view
+            同じ置き場所にmp4 → {type:"file", src:"videos/kubi.mp4"}
+            まだ無いときは id を "" のままにする（「未登録」と表示される）
+            同じ体操の動画が2つあるときは [ {...}, {...} ] と並べ、
+            それぞれに label:"画面に出す名前" を付ける（切り替えボタンになる）
+   manual : イラストマニュアル
+            pages : ページごとの画像。上から順に表示される
+            pdf   : PDFの場所。「印刷用PDFを開く」ボタンになる
+            pdfPage : PDFを開いたとき最初に出すページ番号（対応する
+                      ブラウザのみ。iPadのSafariでは1ページ目が開く）
+            両方とも空なら「未登録」と表示される
+   points : 実施時の注意点（画面に箇条書きで出る）
+   koshin : 更新日
+   sample : true にすると「例」の印が付く。本番では行ごと消す
+   ========================================================== */
+var TAISO = [
+  /* ---- 登録済みの体操（2026-10-27 時点：動画19本・16種類、マニュアル改訂版25ページ） ---- */
+  {
+    id: "futomomo1",
+    name: "ふとももの体操①",
+    yomi: "ふとももの たいそう 1",
+    bui: ["足・腰"],
+    shisei: "座位",
+    jikan: 2,
+    video: { type: "file", src: "videos/futomomo1.mp4" },
+    manual: { pages: ["manual/p-13.png"], pdf: "manual/taiso_manual.pdf", pdfPage: 13 },
+    points: [
+      "ももが硬くなるのを手で確かめる",
+      "ここをつかうと考えながら動かす",
+      "ひざを伸ばして5まで数える",
+      "左右交互に10回"
+    ],
+    koshin: "2026-10-27"
+  },
+  {
+    id: "tsumasaki",
+    name: "つま先を動かす",
+    yomi: "つまさきを うごかす",
+    bui: ["足・腰"],
+    shisei: "座位",
+    jikan: 4,
+    video: { type: "file", src: "videos/tsumasaki.mp4" },
+    manual: { pages: ["manual/p-15.png", "manual/p-16.png"], pdf: "manual/taiso_manual.pdf", pdfPage: 15 },
+    points: [
+      "つま先が上がらないと つまずきます",
+      "声を聞いて 呼ばれた足を上げる",
+      "筋力より脳の練習です",
+      "足を下ろして休む"
+    ],
+    koshin: "2026-10-27"
+  },
+  {
+    id: "fukurahagi1-2",
+    name: "ふくらはぎを動かす①-2",
+    yomi: "ふくらはぎを うごかす 1-2",
+    bui: ["足・腰"],
+    shisei: "立位",
+    jikan: 3,
+    video: { type: "file", src: "videos/fukurahagi1-2.mp4" },
+    manual: { pages: ["manual/p-19.png", "manual/p-20.png", "manual/p-21.png"], pdf: "manual/taiso_manual.pdf", pdfPage: 19 },
+    points: [
+      "後ろのひざを伸ばし、かかとは床に",
+      "10まで数える間、息を止めない",
+      "かかとを上げて5つ数える、10回",
+      "いすから手を離さない"
+    ],
+    koshin: "2026-10-27"
+  },
+  {
+    id: "ashi_mochiage",
+    name: "足を持ち上げる（足の体操①）",
+    yomi: "あしを もちあげる",
+    bui: ["足・腰"],
+    shisei: "座位",
+    jikan: 3,
+    video: { type: "file", src: "videos/ashi_mochiage.mp4" },
+    manual: { pages: ["manual/p-12.png"], pdf: "manual/taiso_manual.pdf", pdfPage: 12 },
+    points: [
+      "浅く座り 背もたれを使わない",
+      "体はまっすぐ、足は真上へ",
+      "ゆっくり上げて5つ数える",
+      "左右交互に10回"
+    ],
+    koshin: "2026-10-27"
+  },
+  {
+    id: "hiza_nobasu",
+    name: "ひざを伸ばす（足の体操②）",
+    yomi: "ひざを のばす",
+    bui: ["足・腰"],
+    shisei: "座位",
+    jikan: 5,
+    video: { type: "file", src: "videos/hiza_nobasu.mp4" },
+    manual: { pages: ["manual/p-13.png", "manual/p-14.png"], pdf: "manual/taiso_manual.pdf", pdfPage: 13 },
+    points: [
+      "ももの前を意識して ひざを伸ばす",
+      "5つ数えて ゆっくり下ろす",
+      "後半は足を上げる つよい動き",
+      "痛いときは無理をしない"
+    ],
+    koshin: "2026-10-27"
+  },
+
+  {
+    id: "donyu_kubi",
+    name: "導入・首の体操",
+    yomi: "どうにゅう くびの たいそう",
+    bui: ["首"],
+    shisei: "座位",
+    jikan: 3,
+    video: { type: "file", src: "videos/donyu_kubi.mp4" },
+    manual: { pages: ["manual/p-05.png"], pdf: "manual/taiso_manual.pdf", pdfPage: 5 },
+    points: [
+      "せすじを伸ばして座る",
+      "あごを引いて 首の後ろを伸ばす",
+      "肩は動かさず 首だけ倒す",
+      "それぞれ10まで数える"
+    ],
+    koshin: "2026-10-27"
+  },
+
+  {
+    id: "kata1",
+    name: "肩と腕を動かす（肩の体操①）",
+    yomi: "かたと うでを うごかす",
+    bui: ["肩", "腕・手"],
+    shisei: "座位",
+    jikan: 3,
+    video: [
+      { label: "肩と腕を動かす", type: "file", src: "videos/kata1_a.mp4" },
+      { label: "肩の体操（3つの動き）", type: "file", src: "videos/kata1_b.mp4" }
+    ],
+    manual: { pages: ["manual/p-06.png", "manual/p-07.png"], pdf: "manual/taiso_manual.pdf", pdfPage: 6 },
+    points: [
+      "体操の前と後で 上がり方を比べる",
+      "痛いときは無理をしない",
+      "上で止めて 10まで数える",
+      "髪を洗う動きを守る"
+    ],
+    koshin: "2026-10-27"
+  },
+  {
+    id: "kata2",
+    name: "肩を大きく動かす（肩の体操②）",
+    yomi: "かたを おおきく うごかす",
+    bui: ["肩"],
+    shisei: "座位",
+    jikan: 3,
+    video: [
+      { label: "肩を大きく動かす", type: "file", src: "videos/kata2_a.mp4" },
+      { label: "肩の体操②", type: "file", src: "videos/kata2_b.mp4" }
+    ],
+    manual: { pages: ["manual/p-08.png", "manual/p-09.png"], pdf: "manual/taiso_manual.pdf", pdfPage: 8 },
+    points: [
+      "前→上→後ろ→下 大きく回す",
+      "肩に力を入れて上げ、ストンと抜く",
+      "腕は下ろしたまま",
+      "体操の前と上がり方を比べる"
+    ],
+    koshin: "2026-10-27"
+  },
+  {
+    id: "shinkokyu",
+    name: "ゆっくり深呼吸",
+    yomi: "ゆっくり しんこきゅう",
+    bui: ["お腹・呼吸"],
+    shisei: "座位",
+    jikan: 1,
+    video: { type: "file", src: "videos/shinkokyu.mp4" },
+    manual: { pages: ["manual/p-23.png"], pdf: "manual/taiso_manual.pdf", pdfPage: 23 },
+    points: [
+      "座ったまま 深呼吸を3回",
+      "ゆっくり吸って、ゆっくり吐く",
+      "説明する時間も見ておく"
+    ],
+    koshin: "2026-10-27"
+  },
+
+  {
+    id: "kubi_yukkuri",
+    name: "首をゆっくり動かす",
+    yomi: "くびを ゆっくり うごかす",
+    bui: ["首"],
+    shisei: "座位",
+    jikan: 3,
+    video: { type: "file", src: "videos/kubi_yukkuri.mp4" },
+    manual: { pages: ["manual/p-05.png"], pdf: "manual/taiso_manual.pdf", pdfPage: 5 },
+    points: [
+      "ゆっくり動かす",
+      "肩を下げたまま",
+      "伸びるのを感じる",
+      "10まで数える"
+    ],
+    koshin: "2026-10-27"
+  },
+  {
+    id: "te",
+    name: "手の体操",
+    yomi: "ての たいそう",
+    bui: ["腕・手"],
+    shisei: "座位",
+    jikan: 2,
+    video: { type: "file", src: "videos/te.mp4" },
+    manual: { pages: ["manual/p-10.png"], pdf: "manual/taiso_manual.pdf", pdfPage: 10 },
+    points: [
+      "両手を前に伸ばす",
+      "グーは力を入れて にぎる",
+      "パーは指先まで広げる",
+      "最後は5つ数えて止める"
+    ],
+    koshin: "2026-10-27"
+  },
+  {
+    id: "kokyu_onaka",
+    name: "呼吸でお腹を動かす",
+    yomi: "こきゅうで おなかを うごかす",
+    bui: ["お腹・呼吸"],
+    shisei: "座位",
+    jikan: 3,
+    video: [
+      { label: "呼吸でお腹を動かす", type: "file", src: "videos/kokyu_onaka_a.mp4" },
+      { label: "②（自分の速さで）", type: "file", src: "videos/kokyu_onaka_b.mp4" }
+    ],
+    manual: { pages: ["manual/p-11.png"], pdf: "manual/taiso_manual.pdf", pdfPage: 11 },
+    points: [
+      "鼻から吸って お腹をふくらませる",
+      "口から吐いて お腹をへこませる",
+      "無理に長く吐かない",
+      "苦しいときは休む"
+    ],
+    koshin: "2026-10-27"
+  },
+  {
+    id: "ashi_yoko",
+    name: "足を横に上げる",
+    yomi: "あしを よこに あげる",
+    bui: ["足・腰"],
+    shisei: "立位",
+    jikan: 2,
+    video: { type: "file", src: "videos/ashi_yoko.mp4" },
+    manual: { pages: ["manual/p-22.png"], pdf: "manual/taiso_manual.pdf", pdfPage: 22 },
+    points: [
+      "体はまっすぐ、つま先は前",
+      "真横に上げて 5つ数える",
+      "いすにつかまって 安全に",
+      "右足5回、左足5回"
+    ],
+    koshin: "2026-10-27"
+  },
+  {
+    id: "futomomo2",
+    name: "ふとももの体操②",
+    yomi: "ふとももの たいそう 2",
+    bui: ["足・腰"],
+    shisei: "座位",
+    jikan: 3,
+    video: { type: "file", src: "videos/futomomo2.mp4" },
+    manual: { pages: ["manual/p-14.png"], pdf: "manual/taiso_manual.pdf", pdfPage: 14 },
+    points: [
+      "ひざを伸ばして 5まで数える",
+      "伸ばしたまま足を上げて もう5つ",
+      "むずかしいときは 無理に上げない",
+      "左右交互に10回"
+    ],
+    koshin: "2026-10-27"
+  },
+
+  {
+    id: "hajimeru_mae",
+    name: "体操をはじめる前に（大切なこと5つ）",
+    yomi: "たいそうを はじめるまえに",
+    bui: ["全身"],
+    shisei: "座位",
+    jikan: 1,
+    video: { type: "file", src: "videos/hajimeru_mae.mp4" },
+    manual: { pages: ["manual/p-02.png", "manual/p-03.png"], pdf: "manual/taiso_manual.pdf", pdfPage: 2 },
+    points: [
+      "体操の見本を見せる",
+      "やりやすい体操を選ぶ",
+      "うで・からだ・あし、全体を動かす",
+      "目的を伝える",
+      "「がんばった」と思えるようにする"
+    ],
+    koshin: "2026-10-27"
+  },
+  {
+    id: "kakato1-1",
+    name: "かかとを上げる①-1",
+    yomi: "かかとを あげる 1-1",
+    bui: ["足・腰"],
+    shisei: "立位",
+    jikan: 3,
+    video: { type: "file", src: "videos/kakato1-1.mp4" },
+    manual: { pages: ["manual/p-17.png", "manual/p-18.png"], pdf: "manual/taiso_manual.pdf", pdfPage: 17 },
+    points: [
+      "いすにつかまって 安全に",
+      "かかとを上げて 5つ数える",
+      "ゆっくり下ろす",
+      "両足で10回、片足で10回"
+    ],
+    koshin: "2026-10-27"
+  },
+
+  /* ---- 新しい体操を足すときは、上の形にならって { } を1つ追加する ---- */
+];
+
+/* ② 部位の並び順（絞り込みボタンの順番） */
+var BUI_ORDER = ["首", "肩", "腕・手", "お腹・呼吸", "足・腰", "全身", "口・顔"];
+
+/* ③ 1回の集団体操の時間（分）。「今日の体操」の合計と残り時間の基準 */
+var SESSION_MIN = 20;
+
+/* ==========================================================
+   ここから下は仕組みの部分。ふだん触る必要はありません
+   ========================================================== */
+var state = { q: "", bui: "すべて", shisei: "すべて" };
+var RECENT_KEY = "ooyake_shudan_taiso_recent";
+var MENU_KEY = "ooyake_shudan_taiso_menu";
+var listScroll = 0;
+var cameFromList = false;
+
+var $ = function (id) { return document.getElementById(id); };
+var listView = $("listView"), detailView = $("detailView"), sessionView = $("sessionView"), backBtn = $("backBtn");
+var cardsEl = $("cards"), emptyMsg = $("emptyMsg"), countLabel = $("countLabel");
+var recentArea = $("recentArea"), recentRow = $("recentRow");
+var menubar = $("menubar"), menubarText = $("menubarText");
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+function kana(s) {
+  return String(s || "").toLowerCase()
+    .replace(/[ァ-ヶ]/g, function (ch) { return String.fromCharCode(ch.charCodeAt(0) - 0x60); })
+    .replace(/\s+/g, "");
+}
+function find(id) {
+  for (var i = 0; i < TAISO.length; i++) if (TAISO[i].id === id) return TAISO[i];
+  return null;
+}
+function shiseiLabel(s) {
+  return s === "座位" ? "座って" : s === "立位" ? "立って" : s === "両方" ? "座っても立っても" : (s || "");
+}
+function videoOk(v) { return !!v && (v.type === "file" ? !!v.src : !!v.id); }
+function vids(t) {
+  var v = t.video;
+  var a = Array.isArray(v) ? v : (v ? [v] : []);
+  return a.filter(videoOk);
+}
+function hasVideo(t) { return vids(t).length > 0; }
+function hasManual(t) {
+  var m = t.manual;
+  if (!m) return false;
+  return !!((m.pages && m.pages.length) || m.pdf);
+}
+function mmss(sec) {
+  sec = Math.max(0, Math.round(sec));
+  var m = Math.floor(sec / 60), s = sec % 60;
+  return m + ":" + (s < 10 ? "0" : "") + s;
+}
+
+/* 絞り込みボタン */
+function buildChips() {
+  var present = {};
+  TAISO.forEach(function (t) { (t.bui || []).forEach(function (b) { present[b] = true; }); });
+  var buis = BUI_ORDER.filter(function (b) { return present[b]; });
+  Object.keys(present).forEach(function (b) { if (buis.indexOf(b) < 0) buis.push(b); });
+  renderChips($("buiChips"), ["すべて"].concat(buis), "bui");
+  renderChips($("shiseiChips"), ["すべて", "座って", "立って"], "shisei");
+}
+function renderChips(el, items, key) {
+  el.innerHTML = items.map(function (v) {
+    return '<button type="button" class="chip' + (state[key] === v ? " on" : "") + '" data-key="' + key + '" data-val="' + esc(v) + '">' + esc(v) + "</button>";
+  }).join("");
+}
+document.addEventListener("click", function (e) {
+  var b = e.target.closest ? e.target.closest(".chip") : null;
+  if (b) {
+    state[b.getAttribute("data-key")] = b.getAttribute("data-val");
+    buildChips();
+    renderCards();
+    return;
+  }
+  var a = e.target.closest ? e.target.closest("[data-add]") : null;
+  if (a) { e.preventDefault(); toggleMenu(a.getAttribute("data-add")); }
+});
+$("q").addEventListener("input", function (e) { state.q = e.target.value; renderCards(); });
+
+/* 一覧 */
+function filtered() {
+  var q = kana(state.q);
+  return TAISO.filter(function (t) {
+    if (state.bui !== "すべて" && (t.bui || []).indexOf(state.bui) < 0) return false;
+    if (state.shisei === "座って" && !(t.shisei === "座位" || t.shisei === "両方")) return false;
+    if (state.shisei === "立って" && !(t.shisei === "立位" || t.shisei === "両方")) return false;
+    if (q && kana(t.name + (t.yomi || "") + (t.bui || []).join("")).indexOf(q) < 0) return false;
+    return true;
+  }).sort(function (a, b) { return (a.yomi || a.name).localeCompare(b.yomi || b.name, "ja"); });
+}
+function tagsHTML(t) {
+  return (t.bui || []).map(function (b) { return '<span class="tag">' + esc(b) + "</span>"; }).join("") +
+    '<span class="tag tag-pose">' + esc(shiseiLabel(t.shisei)) + "</span>" +
+    (t.jikan ? '<span class="tag tag-time">約' + esc(t.jikan) + "分</span>" : "") +
+    '<span class="avail' + (hasVideo(t) ? " on" : "") + '">動画</span>' +
+    '<span class="avail' + (hasManual(t) ? " on" : "") + '">資料</span>';
+}
+function addBtnHTML(t) {
+  var on = menu.indexOf(t.id) >= 0;
+  return '<button type="button" class="add' + (on ? " on" : "") + '" data-add="' + esc(t.id) + '" aria-label="今日の体操に入れる" title="今日の体操に入れる">' + (on ? "✓" : "＋") + "</button>";
+}
+function cardHTML(t) {
+  return '<div class="card">' +
+    '<a class="card-main" href="#t=' + esc(t.id) + '" data-card="1">' +
+      '<div class="name">' + esc(t.name) + (t.sample ? '<span class="badge-sample">例</span>' : "") + "</div>" +
+      '<div class="yomi">' + esc(t.yomi || "") + "</div>" +
+      '<div class="tags">' + tagsHTML(t) + "</div>" +
+    "</a>" + addBtnHTML(t) + "</div>";
+}
+function renderCards() {
+  var list = filtered();
+  cardsEl.innerHTML = list.map(cardHTML).join("");
+  countLabel.textContent = "体操の一覧（" + list.length + "件）";
+  emptyMsg.hidden = list.length > 0;
+}
+cardsEl.addEventListener("click", function (e) {
+  if (e.target.closest && e.target.closest("[data-card]")) { cameFromList = true; listScroll = window.scrollY || 0; }
+});
+recentRow.addEventListener("click", function () { cameFromList = true; listScroll = window.scrollY || 0; });
+
+/* 最近見た体操（この端末だけに残る） */
+function getRecent() {
+  try { var a = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); return Array.isArray(a) ? a : []; }
+  catch (e) { return []; }
+}
+function addRecent(id) {
+  try {
+    var a = getRecent().filter(function (x) { return x !== id; });
+    a.unshift(id);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(a.slice(0, 5)));
+  } catch (e) {}
+}
+function renderRecent() {
+  var ids = getRecent().filter(function (id) { return !!find(id); });
+  if (!ids.length) { recentArea.hidden = true; return; }
+  recentRow.innerHTML = ids.map(function (id) {
+    return '<a class="recent-chip" href="#t=' + esc(id) + '">' + esc(find(id).name) + "</a>";
+  }).join("");
+  recentArea.hidden = false;
+}
+
+/* 今日の体操（組み合わせと合計時間。この端末に前回分が残る） */
+var menu = loadMenu();
+function loadMenu() {
+  try {
+    var a = JSON.parse(localStorage.getItem(MENU_KEY) || "[]");
+    return Array.isArray(a) ? a.filter(function (id) { return !!find(id); }) : [];
+  } catch (e) { return []; }
+}
+function saveMenu() { try { localStorage.setItem(MENU_KEY, JSON.stringify(menu)); } catch (e) {} }
+function menuMinutes() {
+  return menu.reduce(function (s, id) { var t = find(id); return s + (t && t.jikan ? Number(t.jikan) : 0); }, 0);
+}
+function toggleMenu(id) {
+  var i = menu.indexOf(id);
+  if (i < 0) menu.push(id); else menu.splice(i, 1);
+  saveMenu();
+  renderMenuBar();
+  var btns = document.querySelectorAll('[data-add="' + id + '"]');
+  for (var k = 0; k < btns.length; k++) {
+    var on = menu.indexOf(id) >= 0;
+    if (btns[k].classList.contains("add")) {
+      btns[k].classList.toggle("on", on);
+      btns[k].textContent = on ? "✓" : "＋";
+    } else {
+      btns[k].classList.toggle("btn-ghost", on);
+      btns[k].textContent = on ? "今日の体操から外す" : "今日の体操に入れる";
+    }
+  }
+}
+function renderMenuBar() {
+  $("menuHint").textContent = "＋ を押すと「今日の体操」に入り、合計時間（" + SESSION_MIN + "分が基準）が下に出ます。";
+  if (!menu.length || ses) { menubar.hidden = true; document.body.classList.remove("has-menu"); return; }
+  var m = menuMinutes(), diff = SESSION_MIN - m, sub;
+  if (diff > 0) sub = '<span class="small">あと ' + diff + "分 入れられます</span>";
+  else if (diff === 0) sub = '<span class="small">ちょうど ' + SESSION_MIN + "分です</span>";
+  else sub = '<span class="over">' + SESSION_MIN + "分を " + (-diff) + "分 こえています</span>";
+  menubarText.innerHTML = '<div class="big">今日の体操 ' + m + "分 / " + SESSION_MIN + "分（" + menu.length + "つ）</div>" + sub;
+  menubar.hidden = false;
+  document.body.classList.add("has-menu");
+}
+$("menuClear").addEventListener("click", function () {
+  if (!confirm("今日の体操の組み合わせを消しますか？")) return;
+  menu = []; saveMenu(); renderMenuBar(); renderCards();
+});
+$("menuStart").addEventListener("click", function () { startSession(); });
+
+/* 詳細 */
+function placeholder(msg) { return '<div class="placeholder">' + esc(msg) + "</div>"; }
+function renderVideo(t, idx) {
+  var list = vids(t);
+  if (!list.length) return placeholder("動画はまだ登録されていません");
+  idx = Math.min(Math.max(idx || 0, 0), list.length - 1);
+  var v = list[idx], h = "";
+  if (list.length > 1) {
+    h += '<div class="chips vsel">' + list.map(function (x, i) {
+      return '<button type="button" class="chip' + (i === idx ? " on" : "") + '" data-vsel="' + i + '" data-tid="' + esc(t.id) + '">' + esc(x.label || ("動画" + (i + 1))) + "</button>";
+    }).join("") + "</div>";
+  }
+  if (v.type === "youtube") {
+    h += '<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/' + encodeURIComponent(v.id) +
+      '?rel=0&modestbranding=1&playsinline=1" allow="fullscreen; picture-in-picture" allowfullscreen loading="lazy" title="' + esc(t.name) + '"></iframe></div>';
+  } else if (v.type === "drive") {
+    h += '<div class="video"><iframe src="https://drive.google.com/file/d/' + encodeURIComponent(v.id) +
+      '/preview" allow="fullscreen" allowfullscreen loading="lazy" title="' + esc(t.name) + '"></iframe></div>';
+  } else {
+    h += '<div class="video"><video controls playsinline preload="metadata" src="' + esc(v.src) + '"></video></div>';
+  }
+  return h;
+}
+document.addEventListener("click", function (e) {
+  var b = e.target.closest ? e.target.closest("[data-vsel]") : null;
+  if (!b) return;
+  var t = find(b.getAttribute("data-tid"));
+  var box = b.closest(".vbox");
+  if (t && box) box.innerHTML = renderVideo(t, Number(b.getAttribute("data-vsel")));
+});
+function renderManual(t) {
+  var m = t.manual;
+  if (!hasManual(t)) return placeholder("イラストマニュアルはまだ登録されていません");
+  var h = "";
+  if (m.pages && m.pages.length) {
+    h += m.pages.map(function (p, i) {
+      return '<figure class="page"><img src="' + esc(p) + '" alt="' + esc(t.name) + " " + (i + 1) + 'ページ" loading="lazy">' +
+        "<figcaption>" + (i + 1) + " / " + m.pages.length + "</figcaption></figure>";
+    }).join("");
+  } else if (m.pdf) {
+    h += '<div class="pdfbox"><iframe src="' + esc(m.pdf) + '#view=FitH" title="' + esc(t.name) + ' マニュアル"></iframe></div>' +
+      '<p class="note">画面に1ページ目しか出ないときは、下のボタンで開いてください。</p>';
+  }
+  if (m.pdf) h += '<a class="btn" href="' + esc(m.pdf) + (m.pdfPage ? "#page=" + Number(m.pdfPage) : "") + '" target="_blank" rel="noopener">印刷用PDFを開く（全25ページ）</a>';
+  return h;
+}
+function pointsHTML(t) {
+  return (t.points && t.points.length)
+    ? '<ul class="points">' + t.points.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ul>"
+    : '<p class="note">注意点はまだ登録されていません。</p>';
+}
+function renderDetail(t) {
+  var on = menu.indexOf(t.id) >= 0;
+  detailView.innerHTML =
+    '<article class="detail">' +
+      '<header class="detail-head">' +
+        "<h2>" + esc(t.name) + (t.sample ? '<span class="badge-sample">例</span>' : "") + "</h2>" +
+        '<div class="yomi">' + esc(t.yomi || "") + "</div>" +
+        '<div class="tags">' + tagsHTML(t) + "</div>" +
+      "</header>" +
+      '<div class="detail-grid">' +
+        '<section class="block block-video"><h3 class="sec-title">動画</h3><div class="vbox">' + renderVideo(t, 0) + "</div></section>" +
+        '<section class="block block-points"><h3 class="sec-title">ポイント</h3>' + pointsHTML(t) +
+          '<button type="button" class="btn' + (on ? " btn-ghost" : "") + '" data-add="' + esc(t.id) + '">' + (on ? "今日の体操から外す" : "今日の体操に入れる") + "</button>" +
+        "</section>" +
+        '<section class="block block-manual"><h3 class="sec-title">イラストマニュアル</h3>' + renderManual(t) + "</section>" +
+      "</div>" +
+      (t.koshin ? '<p class="updated">更新日：' + esc(t.koshin) + "</p>" : "") +
+      '<button type="button" class="btn btn-ghost" id="backBtn2">一覧へ戻る</button>' +
+    "</article>";
+  $("backBtn2").addEventListener("click", goBack);
+}
+
+/* 体操中の画面（20分の残り時間と、いまの体操の残り時間） */
+var ses = null, sesTimer = null, wakeLock = null, audioCtx = null;
+function segSec(id) { var t = find(id); return ((t && t.jikan) ? Number(t.jikan) : 5) * 60; }
+function startSession() {
+  if (!menu.length) return;
+  ses = { items: menu.slice(), idx: 0, running: true, total: SESSION_MIN * 60, elapsed: 0, segElapsed: 0, last: Date.now(), done: false };
+  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { audioCtx = null; }
+  try { if (navigator.wakeLock) navigator.wakeLock.request("screen").then(function (l) { wakeLock = l; }).catch(function () {}); } catch (e) {}
+  location.hash = "#session";
+}
+function endSession() {
+  ses = null;
+  if (sesTimer) { clearInterval(sesTimer); sesTimer = null; }
+  try { if (wakeLock) { wakeLock.release(); wakeLock = null; } } catch (e) {}
+  try { if (audioCtx) { audioCtx.close(); audioCtx = null; } } catch (e) {}
+}
+function beep() {
+  try {
+    if (!audioCtx) return;
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.frequency.value = 880; g.gain.value = 0.2;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + 0.3);
+  } catch (e) {}
+}
+function sesTick() {
+  if (!ses) return;
+  var now = Date.now();
+  if (ses.running) {
+    var dt = (now - ses.last) / 1000;
+    ses.elapsed += dt; ses.segElapsed += dt;
+    if (ses.idx < ses.items.length && ses.segElapsed >= segSec(ses.items[ses.idx])) sesNext(true);
+    if (!ses.done && ses.elapsed >= ses.total) { ses.done = true; ses.running = false; beep(); }
+  }
+  ses.last = now;
+  sesUpdate();
+}
+function sesNext(auto) {
+  if (!ses || ses.idx >= ses.items.length) return;
+  ses.idx += 1; ses.segElapsed = 0;
+  beep();
+  renderSessionNow(auto);
+}
+function sesUpdate() {
+  if (!ses) return;
+  var rest = ses.total - ses.elapsed;
+  var clock = $("sesClock");
+  if (!clock) return;
+  clock.textContent = mmss(rest);
+  clock.classList.toggle("end", rest <= 60);
+  $("sesBar").style.width = Math.min(100, ses.elapsed / ses.total * 100) + "%";
+  $("sesLabel").textContent = ses.done ? SESSION_MIN + "分 おわりました" : (ses.running ? "のこり時間（" + SESSION_MIN + "分のうち）" : "一時停止中");
+  if (ses.idx < ses.items.length) {
+    $("nowTime").textContent = mmss(segSec(ses.items[ses.idx]) - ses.segElapsed);
+  }
+  $("pauseBtn").textContent = ses.running ? "一時停止" : "再開";
+}
+function renderSessionNow(flash) {
+  var box = $("nowBox"), vid = $("sesVideo"), q = $("queue");
+  if (!box) return;
+  if (ses.idx < ses.items.length) {
+    var t = find(ses.items[ses.idx]);
+    box.innerHTML = '<div class="now-label">いまの体操（' + (ses.idx + 1) + " / " + ses.items.length + "）</div>" +
+      '<div class="now-name">' + esc(t.name) + "</div>" +
+      '<div class="now-time" id="nowTime">' + mmss(segSec(t.id)) + "</div>" +
+      pointsHTML(t);
+    vid.innerHTML = '<div class="vbox">' + renderVideo(t, 0) + "</div>";
+  } else {
+    box.innerHTML = '<div class="now-label">いまの体操</div><div class="now-name">すべての体操が おわりました</div>' +
+      '<p class="note">残り時間は、深呼吸や整理体操にあててください。</p>';
+    vid.innerHTML = "";
+  }
+  $("nextBtn").hidden = ses.idx >= ses.items.length;
+  q.innerHTML = ses.items.map(function (id, i) {
+    var t = find(id), cls = i < ses.idx ? "done" : (i === ses.idx ? "now" : "");
+    return '<li class="' + cls + '"><span>' + (i + 1) + ". " + esc(t.name) + '</span><span class="min">' + (t.jikan || 5) + "分</span></li>";
+  }).join("");
+  if (flash) { box.classList.remove("flash"); void box.offsetWidth; box.classList.add("flash"); }
+}
+function renderSession() {
+  sessionView.innerHTML =
+    '<div class="session-grid">' +
+      '<div class="s-clock clock-box"><div class="clock-label" id="sesLabel"></div><div class="clock" id="sesClock"></div>' +
+        '<div class="bar"><i id="sesBar"></i></div></div>' +
+      '<div class="s-now now-box" id="nowBox"></div>' +
+      '<div class="s-video"><div id="sesVideo"></div></div>' +
+      '<div class="s-ctrl ctrl"><button type="button" class="btn btn-ghost" id="pauseBtn">一時停止</button>' +
+        '<button type="button" class="btn" id="nextBtn">つぎの体操へ</button></div>' +
+      '<div class="s-end"><button type="button" class="btn btn-warn" id="endBtn" style="margin-top:0">体操をおわる</button></div>' +
+      '<div class="s-queue"><h3 class="sec-title">今日の体操（合計 ' + menuMinutes() + " 分）</h3>" +
+        '<ul class="queue" id="queue"></ul></div>' +
+    "</div>";
+  $("pauseBtn").addEventListener("click", function () {
+    if (!ses || ses.done) return;
+    ses.running = !ses.running; ses.last = Date.now(); sesUpdate();
+  });
+  $("nextBtn").addEventListener("click", function () { sesNext(false); sesUpdate(); });
+  $("endBtn").addEventListener("click", function () {
+    if (!ses) return;
+    if (!ses.done && !confirm("体操をおわりますか？")) return;
+    endSession(); location.hash = "";
+  });
+  renderSessionNow(false);
+  sesUpdate();
+  if (sesTimer) clearInterval(sesTimer);
+  sesTimer = setInterval(sesTick, 250);
+}
+
+/* 画面の切り替え（URLの末尾 #t=id で詳細、#session で体操中） */
+function goBack() {
+  if (cameFromList) history.back(); else location.hash = "";
+}
+backBtn.addEventListener("click", goBack);
+
+function route() {
+  var m = /^#t=([A-Za-z0-9_-]+)$/.exec(location.hash || "");
+  var t = m && find(m[1]);
+  if (location.hash === "#session") {
+    if (!ses) { location.hash = ""; return; }
+    renderSession();
+    listView.hidden = true; detailView.hidden = true; sessionView.hidden = false; backBtn.hidden = true;
+    menubar.hidden = true; document.body.classList.remove("has-menu");
+    window.scrollTo(0, 0);
+    return;
+  }
+  if (ses) endSession();
+  if (t) {
+    renderDetail(t);
+    addRecent(t.id);
+    listView.hidden = true; sessionView.hidden = true; detailView.hidden = false; backBtn.hidden = false;
+    renderMenuBar();
+    window.scrollTo(0, 0);
+  } else {
+    renderRecent();
+    renderCards();
+    detailView.hidden = true; sessionView.hidden = true; listView.hidden = false; backBtn.hidden = true;
+    renderMenuBar();
+    window.scrollTo(0, listScroll);
+    cameFromList = false;
+  }
+}
+window.addEventListener("hashchange", route);
+buildChips();
+route();
+</script>
+</body>
+</html>
